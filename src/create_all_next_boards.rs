@@ -165,8 +165,14 @@ impl Board {
                 if p.status != MyBoard {
                     continue;
                 }
-                self.append_vector_moved_boards(&mut boards, Kaku, i, get_vectors(kind))?;
+                self.append_vector_moved_boards(&mut boards, kind, i, get_vectors(kind))?;
             }
+        }
+        for (i, p) in self.pieces[Kyousha].iter().enumerate() {
+            if p.status != MyBoard || p.is_changed {
+                continue;
+            }
+            self.append_vector_moved_boards(&mut boards, Kyousha, i, get_vectors(Kyousha))?;
         }
 
         return Ok(boards);
