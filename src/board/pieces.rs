@@ -8,7 +8,7 @@ use std::ops::{Index, IndexMut};
 use Kind::*;
 use Status::*;
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub(crate) struct Pieces {
     elements: [Set<Piece>; 8],
 }

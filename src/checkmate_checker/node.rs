@@ -3,23 +3,20 @@ mod multi_set;
 mod normal_node;
 mod pndn;
 
-use crate::{
-    common::{shared::board::Board, Rule},
-    Result,
-};
+use crate::{Board, Result};
 use force_not_checkmate_node::ForceNotCheckmateNode;
 use multi_set::*;
 pub(super) use normal_node::NormalNode;
 use pndn::*;
 use std::collections::HashSet;
 
-pub(super) enum Node<R: Rule> {
+pub(super) enum Node {
     ForceNotCheckmate(ForceNotCheckmateNode),
-    Normal(NormalNode<R>),
+    Normal(NormalNode),
 }
 
-impl<R: Rule> Node<R> {
-    pub(super) fn calc_pndn(&mut self, history: &HashSet<&Board<R>>) -> Result<R, ()> {
+impl Node {
+    pub(super) fn calc_pndn(&mut self, history: &HashSet<&Board>) -> Result<()> {
         match self {
             Node::ForceNotCheckmate(_) => Ok(()),
             Node::Normal(node) => node.calc_pndn(history),
@@ -33,7 +30,7 @@ impl<R: Rule> Node<R> {
         }
     }
 
-    pub(crate) fn board(self) -> Option<Board<R>> {
+    pub(crate) fn board(self) -> Option<Board> {
         match self {
             Node::ForceNotCheckmate(_) => None,
             Node::Normal(node) => Some(node.board),
@@ -49,7 +46,7 @@ impl<R: Rule> Node<R> {
     }
 }
 
-impl<R: Rule> MultiSetValue for Node<R> {
+impl MultiSetValue for Node {
     type MultiSetOrderValue = u32;
 
     fn multi_set_order_value(&self) -> Self::MultiSetOrderValue {

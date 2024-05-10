@@ -568,11 +568,6 @@ mod tests {
 ------------------
 ",
         );
-        for (b, _) in b.create_all_next_boards()? {
-            let mut output = String::new();
-            b.dump_to(&mut output, false).unwrap();
-            println!("\"\n{output}\",");
-        }
         assert_eq_boards(
             b.create_all_next_boards()?,
             [

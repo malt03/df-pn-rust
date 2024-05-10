@@ -1,7 +1,13 @@
+mod control_map;
+mod create_all_next_boards;
+mod create_all_next_boards_test;
+mod is_checked;
 mod pieces;
 
 use crate::shared::Set;
 use colored::Colorize;
+pub(crate) use control_map::{get_vectors, CONTROL_MAP};
+pub(crate) use create_all_next_boards::NextBoardKind;
 pub(crate) use pieces::{Coord, Kind as PieceKind, Piece, Pieces, Status as PieceStatus};
 use std::{
     collections::HashMap,
@@ -9,7 +15,7 @@ use std::{
 };
 use PieceStatus::*;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Hash)]
 pub(crate) struct Board {
     pub pieces: Pieces,
     pub board_map: Vec<Vec<Option<(PieceKind, usize)>>>,

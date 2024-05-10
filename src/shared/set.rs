@@ -4,7 +4,7 @@ use std::{
     ops::{Index, IndexMut},
 };
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash)]
 pub(crate) struct Set<T> {
     elements: Vec<T>,
 }

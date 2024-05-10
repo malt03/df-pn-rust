@@ -1,9 +1,7 @@
-mod control_map;
-
 use std::collections::HashSet;
 
-use crate::{Board, Coord, Error, Piece, PieceKind, PieceStatus, Result, BOARD_SIZE};
-use control_map::{get_vectors, CONTROL_MAP};
+use super::{get_vectors, Board, Coord, PieceKind, PieceStatus, BOARD_SIZE, CONTROL_MAP};
+use crate::{Error, Piece, Result};
 use PieceKind::*;
 use PieceStatus::*;
 

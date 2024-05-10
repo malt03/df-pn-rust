@@ -1,30 +1,27 @@
 use super::{Board, ForceNotCheckmateNode, MultiSet, Node, PnDn, Position};
-use crate::{
-    common::{shared::board::NextBoardKind, Rule},
-    Result,
-};
+use crate::{NextBoardKind, Result};
 use std::collections::HashSet;
 
-pub(crate) struct NormalNode<R: Rule> {
-    pub(crate) board: Board<R>,
+pub(crate) struct NormalNode {
+    pub(crate) board: Board,
     is_checking: bool,
     is_checked: bool,
     pub(crate) pndn: PnDn,
-    props: Props<R>,
+    props: Props,
     next_board_kind: NextBoardKind,
 }
 
-struct Props<R: Rule> {
+struct Props {
     position: Position,
     is_children_expanded: bool,
-    children: MultiSet<Node<R>>,
+    children: MultiSet<Node>,
 }
 
-impl<R: Rule> Props<R> {
+impl Props {
     fn expand_children(
         &mut self,
-        next_boards: Vec<(Board<R>, NextBoardKind)>,
-        history: &HashSet<&Board<R>>,
+        next_boards: Vec<(Board, NextBoardKind)>,
+        history: &HashSet<&Board>,
     ) {
         let next_position = self.position.reversed();
 
@@ -48,8 +45,8 @@ impl<R: Rule> Props<R> {
     }
 }
 
-impl<R: Rule> NormalNode<R> {
-    pub(crate) fn children(&mut self) -> &mut MultiSet<Node<R>> {
+impl NormalNode {
+    pub(crate) fn children(&mut self) -> &mut MultiSet<Node> {
         &mut self.props.children
     }
 
@@ -69,10 +66,10 @@ impl<R: Rule> NormalNode<R> {
     }
 
     pub(crate) fn new(
-        board: Board<R>,
+        board: Board,
         position: Position,
         next_board_kind: NextBoardKind,
-    ) -> NormalNode<R> {
+    ) -> NormalNode {
         NormalNode {
             is_checking: board.is_checking(),
             is_checked: board.is_checked(),
@@ -94,7 +91,7 @@ impl<R: Rule> NormalNode<R> {
         }
     }
 
-    pub(crate) fn calc_pndn(&mut self, history: &HashSet<&Board<R>>) -> Result<R, ()> {
+    pub(crate) fn calc_pndn(&mut self, history: &HashSet<&Board>) -> Result<()> {
         let mut copied_history = history.clone();
         copied_history.insert(&self.board);
         if self.props.is_children_expanded {
