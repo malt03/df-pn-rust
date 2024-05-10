@@ -1,3 +1,7 @@
+mod coord;
+
+pub(crate) use coord::Coord;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub(crate) enum Status {
     MyBoard,
@@ -27,12 +31,6 @@ impl Status {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub(crate) struct Coord {
-    pub(crate) x: i8,
-    pub(crate) y: i8,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub(crate) struct Piece {
     pub(crate) coord: Coord,
     pub(crate) is_changed: bool,
@@ -50,6 +48,14 @@ impl Piece {
 
     pub(crate) fn init(x: i8, y: i8, status: Status) -> Piece {
         Piece::new(x, y, status, false)
+    }
+
+    pub(crate) fn moved(coord: Coord, is_changed: bool) -> Piece {
+        Piece {
+            coord,
+            is_changed,
+            status: MyBoard,
+        }
     }
 
     pub(crate) fn catched(is_mine: bool) -> Piece {

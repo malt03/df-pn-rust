@@ -2,16 +2,17 @@ mod pieces;
 
 use crate::shared::Set;
 use colored::Colorize;
-use pieces::{Coord, Kind, Piece, Pieces, Status::*};
+pub(crate) use pieces::{Coord, Kind as PieceKind, Piece, Pieces, Status as PieceStatus};
 use std::{
     collections::HashMap,
     ops::{Index, IndexMut},
 };
+use PieceStatus::*;
 
 #[derive(Clone, Debug)]
 pub(crate) struct Board {
     pub pieces: Pieces,
-    pub board_map: Vec<Vec<Option<(Kind, usize)>>>,
+    pub board_map: Vec<Vec<Option<(PieceKind, usize)>>>,
 }
 
 impl PartialEq for Board {
@@ -21,20 +22,20 @@ impl PartialEq for Board {
 }
 impl Eq for Board {}
 
-impl Index<Kind> for Board {
+impl Index<PieceKind> for Board {
     type Output = Set<Piece>;
 
-    fn index(&self, index: Kind) -> &Self::Output {
+    fn index(&self, index: PieceKind) -> &Self::Output {
         &self.pieces[index]
     }
 }
-impl IndexMut<Kind> for Board {
-    fn index_mut(&mut self, index: Kind) -> &mut Self::Output {
+impl IndexMut<PieceKind> for Board {
+    fn index_mut(&mut self, index: PieceKind) -> &mut Self::Output {
         &mut self.pieces[index]
     }
 }
 
-const BOARD_SIZE: usize = 9;
+pub(crate) const BOARD_SIZE: usize = 9;
 
 impl Board {
     pub(crate) fn new(pieces: Pieces) -> Board {
@@ -77,6 +78,13 @@ impl Board {
         }
     }
 
+    pub(crate) fn piece_at(&self, coord: &Coord) -> Option<(&Piece, PieceKind, usize)> {
+        let Some((kind, i)) = self.board_map[coord.y as usize][coord.x as usize] else {
+            return None;
+        };
+        Some((&self[kind][i], kind, i))
+    }
+
     pub fn dump_to<W>(&self, w: &mut W, colored: bool) -> std::fmt::Result
     where
         W: std::fmt::Write,
@@ -92,7 +100,7 @@ impl Board {
                 }
             }
         };
-        let e = |kind: Kind, is_changed: bool| -> String {
+        let e = |kind: PieceKind, is_changed: bool| -> String {
             let t = kind.title(is_changed);
             if colored {
                 t.red().to_string()
@@ -100,7 +108,7 @@ impl Board {
                 t.to_string()
             }
         };
-        let m = |kind: Kind, is_changed: bool| -> String {
+        let m = |kind: PieceKind, is_changed: bool| -> String {
             let t = kind.title(is_changed);
             if colored {
                 t.green().to_string()
@@ -183,7 +191,7 @@ pub(crate) fn assert_eq_board(left: &Board, right: &'static str) {
 
 #[cfg(test)]
 mod tests {
-    use super::Kind::*;
+    use super::PieceKind::*;
     use super::*;
 
     #[test]

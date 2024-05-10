@@ -19,6 +19,20 @@ impl Kind {
         ALL_KIND.iter().copied()
     }
 
+    pub(crate) fn is_changable(&self) -> bool {
+        match self {
+            Kin | King => false,
+            _ => true,
+        }
+    }
+
+    pub(crate) fn is_force_change(&self) -> bool {
+        match self {
+            Fu | Kyousha | Keima | Hisha | Kaku => true,
+            _ => false,
+        }
+    }
+
     pub(crate) fn title(&self, is_changed: bool) -> &'static str {
         if is_changed {
             match self {
