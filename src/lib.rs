@@ -1,6 +1,7 @@
 mod board;
 mod checkmate_checker;
 mod create_all_next_boards;
+mod create_all_next_boards_test;
 mod error;
 mod result;
 mod shared;

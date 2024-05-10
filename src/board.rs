@@ -51,6 +51,12 @@ impl Board {
         board
     }
 
+    pub fn all_catched() -> Board {
+        let mut board = Board::new(Pieces::all_catched());
+        board.reload_board_map();
+        board
+    }
+
     pub(crate) fn reversed(&self) -> Board {
         let pieces = self.pieces.map(|p| Piece {
             coord: Coord {
@@ -127,8 +133,8 @@ impl Board {
             }
         }
 
-        let enemy_hands_str = enemy_hands
-            .into_iter()
+        let enemy_hands_str = PieceKind::iter()
+            .filter_map(|kind| enemy_hands.get(&kind).map(|&number| (kind, number)))
             .map(|(kind, number)| {
                 if number == 1 {
                     e(kind, false)
@@ -156,8 +162,8 @@ impl Board {
             writeln!(w)?;
         }
 
-        let my_hands_str = my_hands
-            .into_iter()
+        let my_hands_str = PieceKind::iter()
+            .filter_map(|kind| my_hands.get(&kind).map(|&number| (kind, number)))
             .map(|(kind, number)| {
                 if number == 1 {
                     m(kind, false)

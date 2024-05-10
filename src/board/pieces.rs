@@ -5,17 +5,18 @@ use crate::shared::Set;
 pub(crate) use kind::Kind;
 pub(crate) use piece::{Coord, Piece, Status};
 use std::ops::{Index, IndexMut};
+use Kind::*;
 use Status::*;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) struct Pieces {
-    elements: Vec<Set<Piece>>,
+    elements: [Set<Piece>; 8],
 }
 
 impl Pieces {
     pub(crate) fn first() -> Self {
         Pieces {
-            elements: vec![
+            elements: [
                 Set::from(
                     (0..9)
                         .flat_map(|i| [Piece::init(i, 6, MyBoard), Piece::init(i, 2, EnemyBoard)]),
@@ -51,12 +52,38 @@ impl Pieces {
         }
     }
 
+    pub(crate) fn all_catched() -> Self {
+        let all_catched_2 = Set::from((0..2).map(|i| Piece::catched(false)));
+        let all_catched_4 = Set::from((0..4).map(|i| Piece::catched(false)));
+        Pieces {
+            elements: [
+                Set::from((0..18).map(|i| Piece::catched(false))),
+                all_catched_4.clone(),
+                all_catched_4.clone(),
+                all_catched_4.clone(),
+                all_catched_4.clone(),
+                all_catched_2.clone(),
+                all_catched_2.clone(),
+                all_catched_2.clone(),
+            ],
+        }
+    }
+
     pub(crate) fn map<F>(&self, f: F) -> Pieces
     where
         F: Fn(&Piece) -> Piece,
     {
         Pieces {
-            elements: self.elements.iter().map(|set| set.map(&f)).collect(),
+            elements: [
+                self[Fu].map(&f),
+                self[Kyousha].map(&f),
+                self[Keima].map(&f),
+                self[Gin].map(&f),
+                self[Kin].map(&f),
+                self[Kaku].map(&f),
+                self[Hisha].map(&f),
+                self[King].map(&f),
+            ],
         }
     }
 
