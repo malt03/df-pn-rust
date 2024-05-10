@@ -4,7 +4,7 @@ use crate::{Board, NextBoardKind, Result};
 use node::{NormalNode, Position::*};
 use std::collections::HashSet;
 
-pub fn get_checkmate_board(board: Board, n: i32) -> Result<Option<Board>> {
+pub(crate) fn get_checkmate_board(board: Board, n: i32) -> Result<Option<Board>> {
     let mut root = NormalNode::new(board, Offense, NextBoardKind::Normal);
     for _ in 0..n {
         let history = HashSet::new();

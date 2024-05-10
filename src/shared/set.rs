@@ -16,8 +16,21 @@ impl<T> Set<T> {
         }
     }
 
+    pub(crate) fn with_capacity(capacity: usize) -> Set<T> {
+        Set {
+            elements: Vec::with_capacity(capacity),
+        }
+    }
+
     pub(crate) fn push(&mut self, element: T) {
         self.elements.push(element);
+    }
+
+    pub(crate) fn extend<I>(&mut self, iter: I)
+    where
+        I: IntoIterator<Item = T>,
+    {
+        self.elements.extend(iter);
     }
 
     pub(crate) fn len(&self) -> usize {

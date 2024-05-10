@@ -69,6 +69,37 @@ impl Pieces {
         }
     }
 
+    pub(crate) fn new() -> Self {
+        Pieces {
+            elements: [
+                Set::with_capacity(18),
+                Set::with_capacity(4),
+                Set::with_capacity(4),
+                Set::with_capacity(4),
+                Set::with_capacity(4),
+                Set::with_capacity(2),
+                Set::with_capacity(2),
+                Set::with_capacity(2),
+            ],
+        }
+    }
+
+    fn assert_len(&self, kind: Kind, expected: usize) {
+        let len = self[kind].len();
+        assert_eq!(len, expected, "{kind}.len() == {len} expected {expected}",);
+    }
+
+    pub(crate) fn validate_len(&self) {
+        self.assert_len(Fu, 18);
+        self.assert_len(Kyousha, 4);
+        self.assert_len(Keima, 4);
+        self.assert_len(Gin, 4);
+        self.assert_len(Kin, 4);
+        self.assert_len(Kaku, 2);
+        self.assert_len(Hisha, 2);
+        self.assert_len(King, 2);
+    }
+
     pub(crate) fn map<F>(&self, f: F) -> Pieces
     where
         F: Fn(&Piece) -> Piece,

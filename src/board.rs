@@ -15,10 +15,13 @@ use std::{
 };
 use PieceStatus::*;
 
+const UP_ARROW: char = '￪';
+const DOWN_ARROW: char = '￬';
+
 #[derive(Clone, Debug, Hash)]
 pub(crate) struct Board {
-    pub pieces: Pieces,
-    pub board_map: Vec<Vec<Option<(PieceKind, usize)>>>,
+    pub(crate) pieces: Pieces,
+    pub(crate) board_map: Vec<Vec<Option<(PieceKind, usize)>>>,
 }
 
 impl PartialEq for Board {
@@ -57,8 +60,68 @@ impl Board {
         board
     }
 
-    pub fn all_catched() -> Board {
+    pub(crate) fn all_catched() -> Board {
         let mut board = Board::new(Pieces::all_catched());
+        board.reload_board_map();
+        board
+    }
+
+    pub(crate) fn parse<S>(str: S) -> Board
+    where
+        S: AsRef<str>,
+    {
+        let mut pieces = Pieces::new();
+
+        let mut lines = str.as_ref().lines();
+        let enemy_hands = PieceKind::parse_hands(lines.next().unwrap());
+        for (kind, n) in enemy_hands {
+            pieces[kind].extend((0..n).map(|_| Piece::catched(false)));
+        }
+        lines.next();
+
+        for y in 0..BOARD_SIZE as i8 {
+            let line = lines.next().unwrap();
+            let mut chars = line.chars();
+            for x in 0..BOARD_SIZE as i8 {
+                let Some(c) = chars.next() else { break };
+                let status = match c {
+                    ' ' => {
+                        for space in (0..2).map(|_| chars.next()) {
+                            let Some(space) = space else { break };
+                            if space != ' ' {
+                                panic!("Invalid space: {space} ({x},{y})");
+                            }
+                        }
+                        continue;
+                    }
+                    UP_ARROW => MyBoard,
+                    DOWN_ARROW => EnemyBoard,
+                    _ => panic!("Invalid arrow: {c} ({x},{y})"),
+                };
+
+                let c = chars
+                    .next()
+                    .expect(format!("Empty char: ({x},{y})").as_str());
+                let (kind, is_changed) = PieceKind::safe_parse(c)
+                    .expect(format!("Invalid char: {c} ({x},{y})").as_str());
+
+                pieces[kind].push(Piece::new(x, y, status, is_changed));
+            }
+        }
+
+        lines.next();
+        let my_hands = if let Some(line) = lines.next() {
+            PieceKind::parse_hands(line)
+        } else {
+            HashMap::new()
+        };
+        for (kind, n) in my_hands {
+            pieces[kind].extend((0..n).map(|_| Piece::catched(true)));
+        }
+
+        pieces.validate_len();
+
+        let mut board = Board::new(pieces);
         board.reload_board_map();
         board
     }
@@ -97,18 +160,18 @@ impl Board {
         Some((&self[kind][i], kind, i))
     }
 
-    pub fn dump_to<W>(&self, w: &mut W, colored: bool) -> std::fmt::Result
+    pub(crate) fn dump_to<W>(&self, w: &mut W, colored: bool) -> std::fmt::Result
     where
         W: std::fmt::Write,
     {
-        let arrow = |is_mine: bool| -> &str {
+        let arrow = |is_mine: bool| -> String {
             if colored {
-                ""
+                String::new()
             } else {
                 if is_mine {
-                    "￪"
+                    UP_ARROW.to_string()
                 } else {
-                    "￬"
+                    DOWN_ARROW.to_string()
                 }
             }
         };
@@ -129,8 +192,8 @@ impl Board {
             }
         };
 
-        let mut my_hands = HashMap::new();
-        let mut enemy_hands = HashMap::new();
+        let mut my_hands = HashMap::<PieceKind, u8>::new();
+        let mut enemy_hands = HashMap::<PieceKind, u8>::new();
         for (kind, _, p) in self.pieces.iter() {
             match p.status {
                 MyHand => *my_hands.entry(kind).or_insert(0) += 1,
@@ -195,10 +258,7 @@ impl std::fmt::Display for Board {
 pub(crate) fn assert_eq_board(left: &Board, right: &'static str) {
     let mut output = String::new();
     left.dump_to(&mut output, false).unwrap();
-    assert_eq!(
-        output.normal().clear().to_string(),
-        right.strip_prefix("\n").unwrap()
-    );
+    assert_eq!(output.to_string(), right.strip_prefix("\n").unwrap());
 }
 
 #[cfg(test)]
@@ -250,5 +310,26 @@ mod tests {
 ------------------
 香",
         )
+    }
+
+    #[test]
+    fn test_parse() {
+        let str = "香
+------------------
+￬香￬桂￬銀￬金￬王￬金￬銀￬桂￬香
+   ￬飛               ￬角   
+￬歩￬歩￬歩￬歩￬歩￬歩￬歩￬歩￬歩
+                           
+   ￬馬                     
+                           
+   ￪歩￪歩￪歩￪歩￪歩￪歩￪歩￪歩
+                     ￪飛   
+   ￪桂￪銀￪金￪王￪金￪銀￪桂￪香
+------------------
+歩";
+        let board = Board::parse(str);
+        let mut output = String::new();
+        board.dump_to(&mut output, false).unwrap();
+        assert_eq!(output.to_string(), str);
     }
 }
