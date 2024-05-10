@@ -29,54 +29,25 @@ mod tests {
     use super::*;
     use crate::{board::assert_eq_board, Coord, Piece, PieceKind::*, PieceStatus::*};
 
-    // #[test]
-    // fn test_uchifudume() -> Result<Five, ()> {
-    //     let mut base = Board::all_catched();
-    //     base[(King, First)] = Piece::moved(Coord::new(0, 4), false);
-    //     base[(King, Second)] = Piece {
-    //         status: piece::Status::EnemyBoard,
-    //         coord: Coord::new(4, 0),
-    //         is_changed: false,
-    //     };
-    //     base[(Fu, First)] = Piece::catched();
+    #[test]
+    fn test_uchifudume() -> Result<()> {
+        let mut b = Board::all_catched();
+        b[King][0] = Piece::moved(Coord::new(0, 8), false);
+        b[King][1] = Piece::new(8, 0, EnemyBoard, false);
+        b[Fu][0] = Piece::catched(true);
+        b[Hisha][0] = Piece::moved(Coord::new(7, 2), true);
+        b.reload_board_map();
+        println!("{b}");
+        assert_eq!(get_checkmate_board(b.reversed(), 10)?, None);
 
-    //     let mut b = base.clone();
-    //     b[(Hisha, First)] = Piece::moved(Coord::new(3, 2), true);
-    //     b.reload_board_map();
-    //     assert_eq!(get_checkmate_board(b.reversed(), 10)?, None);
-
-    //     let mut b = base.clone();
-    //     b[(Fu, Second)] = Piece::moved(Coord::new(2, 1), true);
-    //     b[(Kaku, First)] = Piece::moved(Coord::new(1, 4), false);
-    //     b[(Kin, Second)] = Piece::catched();
-    //     b[(Kin, First)] = Piece {
-    //         status: piece::Status::EnemyBoard,
-    //         coord: Coord::new(3, 0),
-    //         is_changed: false,
-    //     };
-    //     b.reload_board_map();
-    //     assert_eq_board(
-    //         get_checkmate_board(b.reversed(), 100)?.unwrap(),
-    //         "
-    //         銀飛銀角飛
-    //         ---------------
-    //                  ￬金￬王
-    //               ￪と   ￪歩
-
-    //         ￪王￪角
-    //         ---------------
-    //         金",
-    //     );
-
-    //     Ok(())
-    // }
+        Ok(())
+    }
 
     #[test]
     fn test_get_checkmate_board() -> Result<()> {
-        let mut base = Board::all_catched();
-        base[King][0] = Piece::moved(Coord::new(0, 4), false);
+        let mut b = Board::all_catched();
+        b[King][0] = Piece::moved(Coord::new(0, 8), false);
 
-        let mut b = base.clone();
         b[King][1] = Piece::new(4, 0, EnemyBoard, false);
         b[Fu][0] = Piece::moved(Coord::new(4, 2), false);
         b[Kin][0] = Piece::catched(true);
@@ -91,40 +62,14 @@ mod tests {
             ￪金            
             ￪歩            
                            
+                           
+                           
+                           
+                           
 ￪王                        
-                           
-                           
-                           
-                           
 ------------------
 飛",
         );
-
-        // let mut b = base.clone();
-        // b[(King, Second)] = Piece {
-        //     status: piece::Status::EnemyBoard,
-        //     coord: Coord::new(4, 2),
-        //     is_changed: false,
-        // };
-        // b[(Kin, First)] = Piece::catched();
-        // b[(Kin, Second)] = Piece::catched();
-        // b[(Gin, First)] = Piece::catched();
-        // b[(Gin, Second)] = Piece::catched();
-        // b[(Hisha, Second)] = Piece::moved(Coord::new(2, 4), false);
-        // b[(Fu, First)] = Piece::moved(Coord::new(4, 4), false);
-        // b.reload_board_map();
-        // assert_eq_board(
-        //     get_checkmate_board(b.reversed(), 2000)?.unwrap(),
-        //     "
-        //     角飛歩角
-        //     ---------------
-
-        //                 ￬王
-        //                 ￪金
-        //     ￪王   ￪飛   ￪歩
-        //     ---------------
-        //     銀金銀",
-        // );
 
         Ok(())
     }
