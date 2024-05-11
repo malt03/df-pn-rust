@@ -69,7 +69,7 @@ impl Board {
         board
     }
 
-    pub fn parse<S>(str: S) -> Board
+    pub fn parsed<S>(str: S) -> Board
     where
         S: AsRef<str>,
     {
@@ -330,7 +330,7 @@ mod tests {
    ￪桂￪銀￪金￪王￪金￪銀￪桂￪香
 ------------------
 歩";
-        let board = Board::parse(str);
+        let board = Board::parsed(str);
         let mut output = String::new();
         board.dump_to(&mut output, false).unwrap();
         assert_eq!(output.to_string(), str);

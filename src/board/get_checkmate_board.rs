@@ -6,9 +6,11 @@ use node::{NormalNode, Position::*};
 use std::collections::HashSet;
 
 impl Board {
-    pub fn get_checkmate_boards(&self, n: i32) -> Result<Option<Vec<Board>>> {
+    pub fn get_checkmate_boards(&self, n: usize) -> Result<Option<(Vec<Board>, usize)>> {
         let mut root = NormalNode::new(self.reversed(), Offense, NextBoardKind::Normal);
-        for _ in 0..n {
+        let mut count = 0;
+        for i in 0..n {
+            count = i;
             let history = HashSet::new();
             root.calc_pndn(&history)?;
             if root.pndn.pn == 0 || root.pndn.dn == 0 {
@@ -22,11 +24,11 @@ impl Board {
 
         let mut best_boards = root.best_boards();
         best_boards.pop();
-        Ok(Some(best_boards))
+        Ok(Some((best_boards, count)))
     }
 
-    pub fn get_checkmate_board(&self, n: i32) -> Result<Option<Board>> {
-        let Some(mut boards) = self.get_checkmate_boards(n)? else {
+    pub fn get_checkmate_board(&self, n: usize) -> Result<Option<Board>> {
+        let Some((mut boards, _)) = self.get_checkmate_boards(n)? else {
             return Ok(None);
         };
         Ok(boards.pop())
