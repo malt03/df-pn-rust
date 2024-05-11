@@ -132,7 +132,6 @@ impl Board {
                     if empty_coord.y <= 1 {
                         continue;
                     }
-                    println!("{:?}", empty_coord);
                     put(*empty_coord, NextBoardKind::Normal);
                 }
             }
