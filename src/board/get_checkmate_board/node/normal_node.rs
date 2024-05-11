@@ -1,5 +1,6 @@
 use super::{Board, ForceNotCheckmateNode, MultiSet, Node, PnDn, Position};
-use crate::{NextBoardKind, Result};
+use crate::{Error, NextBoardKind};
+use core::panic;
 use std::collections::HashSet;
 use Position::*;
 
@@ -103,29 +104,33 @@ impl NormalNode {
         }
     }
 
-    pub(crate) fn calc_pndn(
-        &mut self,
-        history: &HashSet<&Board>,
-        max_depth: Option<usize>,
-    ) -> Result<()> {
+    pub(crate) fn calc_pndn(&mut self, history: &HashSet<&Board>, max_depth: Option<usize>) {
         let mut copied_history = history.clone();
         copied_history.insert(&self.board);
         if self.props.is_children_expanded {
             let Some(mut best) = self.props.children.pop_front() else {
-                return Ok(());
+                return;
             };
-            best.calc_pndn(&copied_history, max_depth)?;
+            best.calc_pndn(&copied_history, max_depth);
             self.props.children.push_back(best);
         } else {
-            self.props.expand_children(
-                self.board.reversed().create_all_next_boards()?,
-                &copied_history,
-                max_depth,
-            );
+            match self.board.reversed().create_all_next_boards() {
+                Ok(next_boards) => {
+                    self.props
+                        .expand_children(next_boards, &copied_history, max_depth);
+                }
+                Err(e) => match e {
+                    Error::CatchKing(board) => {
+                        for history in copied_history.iter() {
+                            println!("{}\n===========================", history);
+                        }
+                        println!("{}", board);
+                        panic!("unexpected catch king");
+                    }
+                },
+            }
         }
         self.reload_pndn();
-
-        Ok(())
     }
 
     pub(crate) fn dump_best_board(&self) {

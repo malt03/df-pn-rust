@@ -24,11 +24,15 @@ fn get_kaku_vec(p1: &Piece, p2: &Piece) -> Option<Coord> {
     }
 }
 fn get_kyousha_vec(p1: &Piece, p2: &Piece, y_vector: i8) -> Option<Coord> {
-    if p1.coord.x == p2.coord.x && p1.coord.y > p2.coord.y {
-        Some(Coord::new(0, -y_vector))
-    } else {
-        None
+    if p1.coord.x == p2.coord.x {
+        if y_vector > 0 && p1.coord.y > p2.coord.y {
+            return Some(Coord::new(0, -y_vector));
+        }
+        if y_vector < 0 && p1.coord.y < p2.coord.y {
+            return Some(Coord::new(0, -y_vector));
+        }
     }
+    None
 }
 
 impl Board {
@@ -93,5 +97,21 @@ impl Board {
                 .iter()
                 .any(|p| p.status == move_board && hisha_kaku_kyousha(p, kind))
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::Piece;
+
+    #[test]
+    fn test_is_check_kyousha() {
+        let mut b = Board::all_catched();
+        b[King][0] = Piece::init(0, 0, EnemyBoard);
+        b[Kyousha][0] = Piece::init(0, 6, MyBoard);
+        b.reload_board_map();
+        assert_eq!(b.is_checking(), true);
+        assert_eq!(b.reversed().is_checked(), true);
     }
 }

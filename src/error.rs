@@ -1,6 +1,6 @@
 use crate::Board;
 
 #[derive(Debug)]
-pub enum Error {
+pub(crate) enum Error {
     CatchKing(Board),
 }

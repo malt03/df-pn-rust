@@ -3,7 +3,7 @@ mod multi_set;
 mod normal_node;
 mod pndn;
 
-use crate::{Board, Result};
+use crate::Board;
 use force_not_checkmate_node::ForceNotCheckmateNode;
 use multi_set::*;
 pub(super) use normal_node::NormalNode;
@@ -16,13 +16,9 @@ pub(super) enum Node {
 }
 
 impl Node {
-    pub(super) fn calc_pndn(
-        &mut self,
-        history: &HashSet<&Board>,
-        max_depth: Option<usize>,
-    ) -> Result<()> {
+    pub(super) fn calc_pndn(&mut self, history: &HashSet<&Board>, max_depth: Option<usize>) {
         match self {
-            Node::ForceNotCheckmate(_) => Ok(()),
+            Node::ForceNotCheckmate(_) => {}
             Node::Normal(node) => node.calc_pndn(history, max_depth),
         }
     }
