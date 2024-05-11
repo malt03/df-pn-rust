@@ -152,6 +152,17 @@ mod tests {
     }
 
     #[test]
+    fn test_create_all_next_boards_keima_uchi() -> Result<()> {
+        let mut b = Board::all_catched();
+        b[Keima][0] = Piece::catched(true);
+        println!("{}", b);
+        b.reload_board_map();
+        assert_eq!(b.create_all_next_boards()?.len(), 63);
+
+        Ok(())
+    }
+
+    #[test]
     fn test_create_all_next_boards_fu() -> Result<()> {
         let mut b = Board::all_catched();
         b[Fu][0] = Piece::moved(Coord::new(0, 2), false);

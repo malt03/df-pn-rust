@@ -96,36 +96,50 @@ impl Board {
             cloned.reload_board_map();
             boards.push((cloned, next_board_kind));
         };
-        if kind == Fu {
-            for empty_coord in empty_cells.iter() {
-                if empty_coord.y == 0 {
-                    continue;
-                }
-                let mut is_nifu = false;
-                for y in 0..9 {
-                    let Some((p, kind, _)) = self.piece_at(&Coord::new(empty_coord.x, y)) else {
+        match kind {
+            Fu => {
+                for empty_coord in empty_cells.iter() {
+                    if empty_coord.y == 0 {
                         continue;
-                    };
-                    if kind == Fu && p.status == MyBoard && !p.is_changed {
-                        is_nifu = true;
-                        break;
                     }
+                    let mut is_nifu = false;
+                    for y in 0..9 {
+                        let Some((p, kind, _)) = self.piece_at(&Coord::new(empty_coord.x, y))
+                        else {
+                            continue;
+                        };
+                        if kind == Fu && p.status == MyBoard && !p.is_changed {
+                            is_nifu = true;
+                            break;
+                        }
+                    }
+                    if is_nifu {
+                        continue;
+                    }
+                    put(*empty_coord, NextBoardKind::Uchifu);
                 }
-                if is_nifu {
-                    continue;
-                }
-                put(*empty_coord, NextBoardKind::Uchifu);
             }
-        } else if kind.is_force_change() {
-            for empty_coord in empty_cells.iter() {
-                if empty_coord.y == 0 {
-                    continue;
+            Kyousha => {
+                for empty_coord in empty_cells.iter() {
+                    if empty_coord.y == 0 {
+                        continue;
+                    }
+                    put(*empty_coord, NextBoardKind::Normal);
                 }
-                put(*empty_coord, NextBoardKind::Normal);
             }
-        } else {
-            for empty_coord in empty_cells.iter() {
-                put(*empty_coord, NextBoardKind::Normal);
+            Keima => {
+                for empty_coord in empty_cells.iter() {
+                    if empty_coord.y <= 1 {
+                        continue;
+                    }
+                    println!("{:?}", empty_coord);
+                    put(*empty_coord, NextBoardKind::Normal);
+                }
+            }
+            _ => {
+                for empty_coord in empty_cells.iter() {
+                    put(*empty_coord, NextBoardKind::Normal);
+                }
             }
         }
     }
