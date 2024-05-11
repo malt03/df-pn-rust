@@ -1,5 +1,5 @@
 use clap::Parser;
-use df_pn::Board;
+use df_pn::{Board, CheckmateResult};
 use std::fs::read_to_string;
 
 #[derive(Parser)]
@@ -26,7 +26,7 @@ fn main() {
 
     println!("{board}\n\n=================================\n");
     match board.get_checkmate_boards(args.num_searches, args.max_depth.map(|d| d + 2)) {
-        Some((boards, count)) => {
+        CheckmateResult::Checkmate(boards, count) => {
             for (i, board) in boards.into_iter().rev().enumerate() {
                 println!(
                     "{}\n\n=================================\n",
@@ -35,6 +35,9 @@ fn main() {
             }
             println!("checkmate found in {} searches", count);
         }
-        None => println!("no checkmate"),
+        CheckmateResult::NotCheckmate(count) => {
+            println!("no checkmate found in {} searches", count)
+        }
+        CheckmateResult::Unproven => println!("could not prove checkmate nor not checkmate"),
     }
 }

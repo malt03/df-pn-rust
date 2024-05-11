@@ -38,6 +38,22 @@ impl Node {
     }
 
     #[allow(dead_code)]
+    pub(crate) fn board(&self) -> &Board {
+        match self {
+            Node::ForceNotCheckmate(_) => panic!("ForceNotCheckmateNode has no board"),
+            Node::Normal(node) => &node.board,
+        }
+    }
+
+    #[allow(dead_code)]
+    pub(crate) fn children(&mut self) -> &mut MultiSet<Node> {
+        match self {
+            Node::ForceNotCheckmate(_) => panic!("ForceNotCheckmateNode has no children"),
+            Node::Normal(node) => node.children(),
+        }
+    }
+
+    #[allow(dead_code)]
     pub(crate) fn dump_best_board(&self) {
         match self {
             Node::ForceNotCheckmate(_) => {}

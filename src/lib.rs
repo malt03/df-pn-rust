@@ -10,4 +10,4 @@ pub(crate) use result::Result;
 #[cfg(test)]
 pub(crate) use board::PieceStatus;
 
-pub use board::Board;
+pub use board::{Board, CheckmateResult};

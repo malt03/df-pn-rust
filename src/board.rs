@@ -9,6 +9,7 @@ use crate::shared::Set;
 use colored::Colorize;
 pub(crate) use control_map::{get_vectors, CONTROL_MAP};
 pub(crate) use create_all_next_boards::NextBoardKind;
+pub use get_checkmate_board::CheckmateResult;
 pub(crate) use pieces::{Coord, Kind as PieceKind, Piece, Pieces, Status as PieceStatus};
 use std::{
     collections::HashMap,

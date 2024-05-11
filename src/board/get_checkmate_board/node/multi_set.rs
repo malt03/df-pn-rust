@@ -30,6 +30,27 @@ impl<'a, 'b, T: MultiSetValue> Iterator for MultiSetIterator<'a, 'b, T> {
     }
 }
 
+pub(crate) struct MultiSetIteratorMut<'a: 'b, 'b, T: MultiSetValue> {
+    map_values: btree_map::ValuesMut<'a, T::MultiSetOrderValue, LinkedList<T>>,
+    set_iter: Option<linked_list::IterMut<'b, T>>,
+}
+
+impl<'a, 'b, T: MultiSetValue> Iterator for MultiSetIteratorMut<'a, 'b, T> {
+    type Item = &'b mut T;
+    fn next(&mut self) -> Option<Self::Item> {
+        if let Some(i) = self.set_iter.as_mut() {
+            if let Some(v) = i.next() {
+                return Some(v);
+            }
+        }
+        let Some(set) = self.map_values.next() else {
+            return None;
+        };
+        self.set_iter = Some(set.iter_mut());
+        return self.next();
+    }
+}
+
 impl<T: MultiSetValue> MultiSet<T> {
     pub(crate) fn new() -> Self {
         Self {
@@ -40,6 +61,14 @@ impl<T: MultiSetValue> MultiSet<T> {
     pub(crate) fn iter(&self) -> MultiSetIterator<'_, '_, T> {
         return MultiSetIterator {
             map_values: self.inner.values(),
+            set_iter: None,
+        };
+    }
+
+    #[allow(dead_code)]
+    pub(crate) fn iter_mut(&mut self) -> MultiSetIteratorMut<'_, '_, T> {
+        return MultiSetIteratorMut {
+            map_values: self.inner.values_mut(),
             set_iter: None,
         };
     }
