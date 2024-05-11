@@ -6,6 +6,8 @@ pub(crate) use kind::Kind;
 pub(crate) use piece::{Coord, Piece, Status};
 use std::ops::{Index, IndexMut};
 use Kind::*;
+
+#[cfg(test)]
 use Status::*;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
@@ -14,6 +16,7 @@ pub(crate) struct Pieces {
 }
 
 impl Pieces {
+    #[cfg(test)]
     pub(crate) fn first() -> Self {
         Pieces {
             elements: [
@@ -52,12 +55,13 @@ impl Pieces {
         }
     }
 
+    #[cfg(test)]
     pub(crate) fn all_catched() -> Self {
-        let all_catched_2 = Set::from((0..2).map(|i| Piece::catched(false)));
-        let all_catched_4 = Set::from((0..4).map(|i| Piece::catched(false)));
+        let all_catched_2 = Set::from((0..2).map(|_| Piece::catched(false)));
+        let all_catched_4 = Set::from((0..4).map(|_| Piece::catched(false)));
         Pieces {
             elements: [
-                Set::from((0..18).map(|i| Piece::catched(false))),
+                Set::from((0..18).map(|_| Piece::catched(false))),
                 all_catched_4.clone(),
                 all_catched_4.clone(),
                 all_catched_4.clone(),

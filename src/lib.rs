@@ -3,9 +3,10 @@ mod error;
 mod result;
 mod shared;
 
-pub(crate) use board::{
-    get_vectors, Coord, NextBoardKind, Piece, PieceKind, PieceStatus, BOARD_SIZE, CONTROL_MAP,
-};
+pub(crate) use board::{Coord, NextBoardKind, Piece, PieceKind, BOARD_SIZE};
+
+#[cfg(test)]
+pub(crate) use board::PieceStatus;
 
 pub use board::Board;
 pub use error::Error;

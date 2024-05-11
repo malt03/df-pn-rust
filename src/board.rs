@@ -55,12 +55,14 @@ impl Board {
         }
     }
 
+    #[cfg(test)]
     pub(crate) fn first() -> Board {
         let mut board = Board::new(Pieces::first());
         board.reload_board_map();
         board
     }
 
+    #[cfg(test)]
     pub(crate) fn all_catched() -> Board {
         let mut board = Board::new(Pieces::all_catched());
         board.reload_board_map();

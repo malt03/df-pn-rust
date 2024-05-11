@@ -3,7 +3,7 @@ mod node;
 use super::{Board, NextBoardKind};
 use crate::Result;
 use node::{NormalNode, Position::*};
-use std::{collections::HashSet, fmt::Pointer};
+use std::collections::HashSet;
 
 impl Board {
     // pub fn get_checkmate_boards(self, n: i32) -> Result<Vec<Board>> {
@@ -37,16 +37,6 @@ impl Board {
                 break;
             }
         }
-
-        // let children = root.children();
-        // loop {
-        //     let Some(child) = children.pop_front() else {
-        //         break;
-        //     };
-        //     println!("{}", child.board().unwrap());
-        // }
-
-        // unimplemented!()
 
         if root.pndn.pn != 0 {
             return Ok(None);
