@@ -1,6 +1,7 @@
 mod control_map;
 mod create_all_next_boards;
 mod create_all_next_boards_test;
+mod get_checkmate_board;
 mod is_checked;
 mod pieces;
 

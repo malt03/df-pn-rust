@@ -97,7 +97,12 @@ impl Pieces {
         self.assert_len(Kin, 4);
         self.assert_len(Kaku, 2);
         self.assert_len(Hisha, 2);
-        self.assert_len(King, 2);
+
+        let king_len = self[King].len();
+        assert!(
+            king_len == 1 || king_len == 2,
+            "{King}.len() == {king_len} expected 1 or 2",
+        );
     }
 
     pub(crate) fn map<F>(&self, f: F) -> Pieces

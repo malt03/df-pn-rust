@@ -1,5 +1,5 @@
 use bpaf::Bpaf;
-use df_pn::Board;
+use df_pn::{Board, Error};
 use std::fs::read_to_string;
 
 #[derive(Clone, Debug, Bpaf)]
@@ -17,4 +17,11 @@ fn main() {
     let board = Board::parse(body);
 
     println!("{board}");
+    match board.get_checkmate_board(1000000) {
+        Ok(Some(board)) => println!("{board}"),
+        Ok(None) => println!("no checkmate"),
+        Err(e) => match e {
+            Error::CatchKing(board) => println!("catch king: {board}"),
+        },
+    }
 }

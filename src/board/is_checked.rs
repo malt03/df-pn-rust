@@ -41,10 +41,13 @@ impl Board {
     }
 
     fn is_check_base(&self, move_board: PieceStatus, y_vector: i8) -> bool {
-        let &king = &self.pieces[King]
+        let Some(&king) = &self.pieces[King]
             .iter()
             .find(|&p| p.status == move_board.reversed())
-            .unwrap();
+        else {
+            return false;
+        };
+
         for (kind, _, p) in self.pieces.iter() {
             if p.status != move_board
                 || i8::abs(p.coord.x - king.coord.x) > 1

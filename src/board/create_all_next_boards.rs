@@ -35,6 +35,7 @@ impl Board {
                 let mut cloned = self.clone();
                 cloned[kind][i] = Piece::moved(new_coord, p.is_changed);
                 cloned[King][target_i] = Piece::catched(true);
+                cloned.reload_board_map();
                 return Err(Error::CatchKing(cloned));
             }
             if self[target_kind][target_i].status == MyBoard {
