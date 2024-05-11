@@ -24,9 +24,6 @@ impl Board {
         if new_coord.is_out_of_board() {
             return Ok(false);
         }
-        let is_changable_pos = (p.coord.y == 0 || new_coord.y == 0) && !p.is_changed;
-        let is_changable = is_changable_pos && kind.is_changable();
-        let is_force_change = is_changable_pos && kind.is_force_change();
 
         let target_piece_three = self.piece_at(&new_coord);
 
@@ -45,6 +42,27 @@ impl Board {
         let catch_if_needed = |board: &mut Board| {
             if let Some((_, k, i)) = target_piece_three {
                 board[k][i] = Piece::catched(true);
+            }
+        };
+
+        let (is_changable, is_force_change) = if p.is_changed {
+            (false, false)
+        } else {
+            match kind {
+                Fu | Hisha | Kaku => (false, p.coord.y < 3 || new_coord.y < 3),
+                Kyousha | Keima => {
+                    if p.is_changed {
+                        (false, false)
+                    } else if p.coord.y < 2 || new_coord.y < 2 {
+                        (false, true)
+                    } else if p.coord.y == 2 && new_coord.y == 2 {
+                        (true, false)
+                    } else {
+                        (false, false)
+                    }
+                }
+                Gin => (true, false),
+                Kin | King => (false, false),
             }
         };
         if is_changable || is_force_change {
