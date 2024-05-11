@@ -61,7 +61,7 @@ impl Board {
                         (false, false)
                     }
                 }
-                Gin => (true, false),
+                Gin => (p.coord.y < 3 || new_coord.y < 3, false),
                 Kin | King => (false, false),
             }
         };
