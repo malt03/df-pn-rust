@@ -53,10 +53,7 @@ impl Board {
         };
 
         for (kind, _, p) in self.pieces.iter() {
-            if p.status != move_board
-                || i8::abs(p.coord.x - king.coord.x) > 1
-                || i8::abs(p.coord.y - king.coord.y) > 1
-            {
+            if p.status != move_board {
                 continue;
             }
             for control in &CONTROL_MAP[kind][p.is_changed] {
@@ -110,6 +107,16 @@ mod tests {
         let mut b = Board::all_catched();
         b[King][0] = Piece::init(0, 0, EnemyBoard);
         b[Kyousha][0] = Piece::init(0, 6, MyBoard);
+        b.reload_board_map();
+        assert_eq!(b.is_checking(), true);
+        assert_eq!(b.reversed().is_checked(), true);
+    }
+
+    #[test]
+    fn test_is_check_keima() {
+        let mut b = Board::all_catched();
+        b[King][0] = Piece::init(0, 0, EnemyBoard);
+        b[Keima][0] = Piece::init(1, 2, MyBoard);
         b.reload_board_map();
         assert_eq!(b.is_checking(), true);
         assert_eq!(b.reversed().is_checked(), true);
