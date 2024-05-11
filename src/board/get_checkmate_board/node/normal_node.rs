@@ -130,4 +130,13 @@ impl NormalNode {
             }
         };
     }
+
+    pub(crate) fn best_boards(mut self) -> Vec<Board> {
+        let Some(best_node) = self.children().pop_front() else {
+            return vec![self.board];
+        };
+        let mut best_boards = best_node.best_boards();
+        best_boards.push(self.board);
+        best_boards
+    }
 }

@@ -16,12 +16,19 @@ fn main() {
         .expect(format!("failed to read file: {}", args.board_file).as_str());
     let board = Board::parse(body);
 
-    println!("{board}");
-    match board.get_checkmate_board(1000000) {
-        Ok(Some(board)) => println!("{board}"),
+    println!("{board}\n\n=================================\n");
+    match board.get_checkmate_boards(1000000) {
+        Ok(Some(boards)) => {
+            for (i, board) in boards.into_iter().rev().enumerate() {
+                println!(
+                    "{}\n\n=================================\n",
+                    if i % 2 == 0 { board } else { board.reversed() }
+                );
+            }
+        }
         Ok(None) => println!("no checkmate"),
         Err(e) => match e {
-            Error::CatchKing(board) => println!("catch king: {board}"),
+            Error::CatchKing(board) => println!("unexpected catch king: {board}"),
         },
     }
 }

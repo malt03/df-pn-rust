@@ -129,7 +129,7 @@ impl Board {
         board
     }
 
-    pub(crate) fn reversed(&self) -> Board {
+    pub fn reversed(&self) -> Board {
         let pieces = self.pieces.map(|p| Piece {
             coord: Coord {
                 x: BOARD_SIZE as i8 - p.coord.x - 1,

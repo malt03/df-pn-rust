@@ -30,10 +30,10 @@ impl Node {
         }
     }
 
-    pub(crate) fn board(self) -> Option<Board> {
+    pub(crate) fn best_boards(self) -> Vec<Board> {
         match self {
-            Node::ForceNotCheckmate(_) => None,
-            Node::Normal(node) => Some(node.board),
+            Node::ForceNotCheckmate(_) => Vec::new(),
+            Node::Normal(node) => node.best_boards(),
         }
     }
 

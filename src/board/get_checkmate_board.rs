@@ -6,29 +6,7 @@ use node::{NormalNode, Position::*};
 use std::collections::HashSet;
 
 impl Board {
-    // pub fn get_checkmate_boards(self, n: i32) -> Result<Vec<Board>> {
-    //     let mut root = NormalNode::new(self, Offense, NextBoardKind::Normal);
-    //     for _ in 0..n {
-    //         let history = HashSet::new();
-    //         root.calc_pndn(&history)?;
-    //         if root.pndn.pn == 0 || root.pndn.dn == 0 {
-    //             break;
-    //         }
-    //     }
-
-    //     let mut boards = Vec::new();
-    //     if root.pndn.pn == 0 {
-    //         for child in root.children() {
-    //             if let Some(board) = child.board() {
-    //                 boards.push(board);
-    //             }
-    //         }
-    //     }
-
-    //     Ok(boards)
-    // }
-
-    pub fn get_checkmate_board(&self, n: i32) -> Result<Option<Board>> {
+    pub fn get_checkmate_boards(&self, n: i32) -> Result<Option<Vec<Board>>> {
         let mut root = NormalNode::new(self.reversed(), Offense, NextBoardKind::Normal);
         for _ in 0..n {
             let history = HashSet::new();
@@ -42,10 +20,16 @@ impl Board {
             return Ok(None);
         }
 
-        let Some(best) = root.children().pop_front() else {
+        let mut best_boards = root.best_boards();
+        best_boards.pop();
+        Ok(Some(best_boards))
+    }
+
+    pub fn get_checkmate_board(&self, n: i32) -> Result<Option<Board>> {
+        let Some(mut boards) = self.get_checkmate_boards(n)? else {
             return Ok(None);
         };
-        Ok(best.board())
+        Ok(boards.pop())
     }
 }
 
