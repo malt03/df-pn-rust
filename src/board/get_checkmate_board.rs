@@ -105,7 +105,7 @@ mod tests {
         b[Fu][0] = Piece::catched(true);
         b[Hisha][0] = Piece::moved(Coord::new(7, 2), true);
         b.reload_board_map();
-        assert!(b.get_checkmate_board(10, None).is_not_checkmate(),);
+        assert!(b.get_checkmate_board(200, None).is_not_checkmate(),);
     }
 
     #[test]
