@@ -19,7 +19,7 @@ const UP_ARROW: char = '￪';
 const DOWN_ARROW: char = '￬';
 
 #[derive(Clone, Debug, Hash)]
-pub(crate) struct Board {
+pub struct Board {
     pub(crate) pieces: Pieces,
     pub(crate) board_map: Vec<Vec<Option<(PieceKind, usize)>>>,
 }
@@ -66,7 +66,7 @@ impl Board {
         board
     }
 
-    pub(crate) fn parse<S>(str: S) -> Board
+    pub fn parse<S>(str: S) -> Board
     where
         S: AsRef<str>,
     {
@@ -314,9 +314,9 @@ mod tests {
 
     #[test]
     fn test_parse() {
-        let str = "香
+        let str = "香x2 金
 ------------------
-￬香￬桂￬銀￬金￬王￬金￬銀￬桂￬香
+￬香￬桂￬銀   ￬王￬金￬銀￬桂   
    ￬飛               ￬角   
 ￬歩￬歩￬歩￬歩￬歩￬歩￬歩￬歩￬歩
                            

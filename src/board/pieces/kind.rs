@@ -56,11 +56,11 @@ impl Kind {
 
             let n = {
                 if let Some(c) = chars.next() {
-                    if c == 'x' {
-                        chars.next();
+                    if c != 'x' {
+                        panic!("needs `x` before number for {kind} got {c}");
                     }
                     let n = chars.as_str();
-                    n.parse().expect(format!("invalid number: {n}").as_str())
+                    n.parse().expect(format!("invalid number {n}").as_str())
                 } else {
                     1
                 }
