@@ -51,9 +51,16 @@ impl Board {
             if root.pndn.pn == 0 || root.pndn.dn == 0 {
                 break;
             }
+
+            if i % 10000 == 0 {
+                println!("{i}");
+            }
         }
 
-        if root.pndn.pn != 0 {
+        let is_checkmate = root.pndn.pn == 0;
+        root.dump_best_board(is_checkmate);
+
+        if !is_checkmate {
             return if count == n - 1 {
                 CheckmateResult::Unproven
             } else {

@@ -30,6 +30,11 @@ fn main() {
     match result {
         CheckmateResult::Checkmate(boards, count)
         | CheckmateResult::NotCheckmate(boards, count) => {
+            println!("\n\n");
+            println!("===========================================");
+            println!("               best boards");
+            println!("===========================================");
+            println!("\n\n");
             for (i, board) in boards.into_iter().rev().enumerate() {
                 println!(
                     "{}\n\n=================================\n",
