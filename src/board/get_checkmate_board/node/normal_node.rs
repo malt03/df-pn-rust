@@ -1,6 +1,7 @@
 use super::{Board, ForceNotCheckmateNode, MultiSet, Node, PnDn, Position};
 use crate::{NextBoardKind, Result};
 use std::collections::HashSet;
+use Position::*;
 
 pub(crate) struct NormalNode {
     pub(crate) board: Board,
@@ -132,10 +133,15 @@ impl NormalNode {
     }
 
     pub(crate) fn best_boards(mut self) -> Vec<Board> {
-        let Some(best_node) = self.children().pop_front() else {
+        let Some(best_nodes) = self.children().pop_same_key_fronts() else {
             return vec![self.board];
         };
-        let mut best_boards = best_node.best_boards();
+        let mut best_boards_vec: Vec<_> = best_nodes.into_iter().map(|n| n.best_boards()).collect();
+        best_boards_vec.sort_unstable_by_key(|h| h.len());
+        let mut best_boards = match self.props.position {
+            Offense => best_boards_vec.swap_remove(0),
+            Defense => best_boards_vec.pop().unwrap(),
+        };
         best_boards.push(self.board);
         best_boards
     }

@@ -62,6 +62,10 @@ impl<T: MultiSetValue> MultiSet<T> {
         return Some(value);
     }
 
+    pub(crate) fn pop_same_key_fronts(&mut self) -> Option<LinkedList<T>> {
+        Some(self.inner.pop_first()?.1)
+    }
+
     pub(crate) fn peak_front(&self) -> Option<&T> {
         let (_, list) = self.inner.iter().next()?;
         return list.front();
