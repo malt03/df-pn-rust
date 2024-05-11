@@ -6,13 +6,17 @@ use node::{NormalNode, Position::*};
 use std::collections::HashSet;
 
 impl Board {
-    pub fn get_checkmate_boards(&self, n: usize) -> Result<Option<(Vec<Board>, usize)>> {
+    pub fn get_checkmate_boards(
+        &self,
+        n: usize,
+        max_depth: Option<usize>,
+    ) -> Result<Option<(Vec<Board>, usize)>> {
         let mut root = NormalNode::new(self.reversed(), Offense, NextBoardKind::Normal);
         let mut count = 0;
         for i in 0..n {
             count = i;
             let history = HashSet::new();
-            root.calc_pndn(&history)?;
+            root.calc_pndn(&history, max_depth)?;
             if root.pndn.pn == 0 || root.pndn.dn == 0 {
                 break;
             }
@@ -27,8 +31,8 @@ impl Board {
         Ok(Some((best_boards, count)))
     }
 
-    pub fn get_checkmate_board(&self, n: usize) -> Result<Option<Board>> {
-        let Some((mut boards, _)) = self.get_checkmate_boards(n)? else {
+    pub fn get_checkmate_board(&self, n: usize, max_depth: Option<usize>) -> Result<Option<Board>> {
+        let Some((mut boards, _)) = self.get_checkmate_boards(n, max_depth)? else {
             return Ok(None);
         };
         Ok(boards.pop())
@@ -48,7 +52,7 @@ mod tests {
         b[Fu][0] = Piece::catched(true);
         b[Hisha][0] = Piece::moved(Coord::new(7, 2), true);
         b.reload_board_map();
-        assert_eq!(b.get_checkmate_board(10)?, None);
+        assert_eq!(b.get_checkmate_board(10, None)?, None);
 
         Ok(())
     }
@@ -64,7 +68,7 @@ mod tests {
         b[Hisha][0] = Piece::catched(true);
         b.reload_board_map();
         assert_eq_board(
-            &b.get_checkmate_board(10)?.unwrap(),
+            &b.get_checkmate_board(10, None)?.unwrap(),
             "
 歩x17 香x4 桂x4 銀x4 金x3 角x2 飛
 ------------------

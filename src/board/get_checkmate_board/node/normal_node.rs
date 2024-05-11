@@ -23,8 +23,19 @@ impl Props {
         &mut self,
         next_boards: Vec<(Board, NextBoardKind)>,
         history: &HashSet<&Board>,
+        max_depth: Option<usize>,
     ) {
         let next_position = self.position.reversed();
+
+        if let Some(max_depth) = max_depth {
+            if history.len() == max_depth {
+                self.children
+                    .push_back(Node::ForceNotCheckmate(ForceNotCheckmateNode::new(
+                        next_position,
+                    )));
+                return;
+            }
+        }
 
         for (next_board, next_board_kind) in next_boards {
             if history.contains(&next_board) {
@@ -92,19 +103,24 @@ impl NormalNode {
         }
     }
 
-    pub(crate) fn calc_pndn(&mut self, history: &HashSet<&Board>) -> Result<()> {
+    pub(crate) fn calc_pndn(
+        &mut self,
+        history: &HashSet<&Board>,
+        max_depth: Option<usize>,
+    ) -> Result<()> {
         let mut copied_history = history.clone();
         copied_history.insert(&self.board);
         if self.props.is_children_expanded {
             let Some(mut best) = self.props.children.pop_front() else {
                 return Ok(());
             };
-            best.calc_pndn(&copied_history)?;
+            best.calc_pndn(&copied_history, max_depth)?;
             self.props.children.push_back(best);
         } else {
             self.props.expand_children(
                 self.board.reversed().create_all_next_boards()?,
                 &copied_history,
+                max_depth,
             );
         }
         self.reload_pndn();

@@ -16,10 +16,14 @@ pub(super) enum Node {
 }
 
 impl Node {
-    pub(super) fn calc_pndn(&mut self, history: &HashSet<&Board>) -> Result<()> {
+    pub(super) fn calc_pndn(
+        &mut self,
+        history: &HashSet<&Board>,
+        max_depth: Option<usize>,
+    ) -> Result<()> {
         match self {
             Node::ForceNotCheckmate(_) => Ok(()),
-            Node::Normal(node) => node.calc_pndn(history),
+            Node::Normal(node) => node.calc_pndn(history, max_depth),
         }
     }
 
