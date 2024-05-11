@@ -25,18 +25,22 @@ fn main() {
     let board = Board::parsed(body);
 
     println!("{board}\n\n=================================\n");
-    match board.get_checkmate_boards(args.num_searches, args.max_depth.map(|d| d + 2)) {
-        CheckmateResult::Checkmate(boards, count) => {
+    let result = board.get_checkmate_boards(args.num_searches, args.max_depth.map(|d| d + 2));
+    let is_checkmate = result.is_checkmate();
+    match result {
+        CheckmateResult::Checkmate(boards, count)
+        | CheckmateResult::NotCheckmate(boards, count) => {
             for (i, board) in boards.into_iter().rev().enumerate() {
                 println!(
                     "{}\n\n=================================\n",
                     if i % 2 == 0 { board } else { board.reversed() }
                 );
             }
-            println!("checkmate found in {} searches", count);
-        }
-        CheckmateResult::NotCheckmate(count) => {
-            println!("no checkmate found in {} searches", count)
+            if is_checkmate {
+                println!("checkmate found in {} searches", count);
+            } else {
+                println!("not checkmate found in {} searches", count);
+            }
         }
         CheckmateResult::Unproven => println!("could not prove checkmate nor not checkmate"),
     }

@@ -6,15 +6,24 @@ use std::collections::HashSet;
 
 pub enum CheckmateResult<T> {
     Checkmate(T, usize),
-    NotCheckmate(usize),
+    NotCheckmate(T, usize),
     Unproven,
+}
+
+impl<T> CheckmateResult<T> {
+    pub fn is_checkmate(&self) -> bool {
+        match self {
+            CheckmateResult::Checkmate(_, _) => true,
+            _ => false,
+        }
+    }
 }
 
 #[cfg(test)]
 impl<T> CheckmateResult<T> {
     fn is_not_checkmate(&self) -> bool {
         match self {
-            CheckmateResult::NotCheckmate(_) => true,
+            CheckmateResult::NotCheckmate(_, _) => true,
             _ => false,
         }
     }
@@ -48,13 +57,14 @@ impl Board {
             return if count == n - 1 {
                 CheckmateResult::Unproven
             } else {
-                CheckmateResult::NotCheckmate(count)
+                let mut best_boards = root.best_boards();
+                best_boards.pop();
+                CheckmateResult::NotCheckmate(best_boards, count)
             };
         }
 
         let mut best_boards = root.best_boards();
         best_boards.pop();
-
         CheckmateResult::Checkmate(best_boards, count)
     }
 
@@ -67,7 +77,9 @@ impl Board {
             CheckmateResult::Checkmate(mut boards, n) => {
                 CheckmateResult::Checkmate(boards.pop().unwrap(), n)
             }
-            CheckmateResult::NotCheckmate(n) => CheckmateResult::NotCheckmate(n),
+            CheckmateResult::NotCheckmate(mut boards, n) => {
+                CheckmateResult::NotCheckmate(boards.pop().unwrap(), n)
+            }
             CheckmateResult::Unproven => CheckmateResult::Unproven,
         }
     }
