@@ -1,7 +1,7 @@
 mod node;
 
-use super::{Board, NextBoardKind};
-use node::{NormalNode, Position::*};
+use super::Board;
+use node::{NormalNode, Store};
 use std::collections::HashSet;
 
 pub enum CheckmateResult<T> {
@@ -42,17 +42,19 @@ impl Board {
         n: Option<usize>,
         max_depth: Option<usize>,
     ) -> CheckmateResult<Vec<Board>> {
-        let mut root = NormalNode::new(self.reversed(), Offense, NextBoardKind::Normal);
+        let mut store = Store::new();
+
+        let mut root = NormalNode::new(&mut store, self.reversed());
         let mut i = 0;
         loop {
             let history = HashSet::new();
-            root.calc_pndn(&history, max_depth);
+            root.calc_pndn(&mut store, &history, max_depth);
             if root.pndn.pn == 0 || root.pndn.dn == 0 {
                 break;
             }
 
             if i % 50000 == 0 {
-                root.dump_single_best_board();
+                root.dump_single_best_board(&store);
                 println!("{i}");
             }
 
@@ -65,11 +67,11 @@ impl Board {
         }
 
         if root.pndn.pn == 0 {
-            let mut best_boards = root.best_boards();
+            let mut best_boards = root.best_boards(&store);
             best_boards.pop();
             CheckmateResult::Checkmate(best_boards, i)
         } else if root.pndn.dn == 0 {
-            let mut best_boards = root.best_boards();
+            let mut best_boards = root.best_boards(&store);
             best_boards.pop();
             CheckmateResult::NotCheckmate(best_boards, i)
         } else {

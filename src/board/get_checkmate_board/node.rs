@@ -6,7 +6,7 @@ mod pndn;
 use crate::Board;
 use force_not_checkmate_node::ForceNotCheckmateNode;
 use multi_set::*;
-pub(super) use normal_node::NormalNode;
+pub(super) use normal_node::{Key, NormalNode, Store};
 use pndn::*;
 use std::collections::HashSet;
 
@@ -16,10 +16,15 @@ pub(super) enum Node {
 }
 
 impl Node {
-    pub(super) fn calc_pndn(&mut self, history: &HashSet<&Board>, max_depth: Option<usize>) {
+    pub(super) fn calc_pndn(
+        &mut self,
+        store: &mut Store,
+        history: &HashSet<Key>,
+        max_depth: Option<usize>,
+    ) {
         match self {
             Node::ForceNotCheckmate(_) => {}
-            Node::Normal(node) => node.calc_pndn(history, max_depth),
+            Node::Normal(node) => node.calc_pndn(store, history, max_depth),
         }
     }
 
@@ -30,18 +35,18 @@ impl Node {
         }
     }
 
-    pub(crate) fn best_boards(self) -> Vec<Board> {
+    pub(crate) fn best_boards(self, store: &Store) -> Vec<Board> {
         match self {
             Node::ForceNotCheckmate(_) => Vec::new(),
-            Node::Normal(node) => node.best_boards(),
+            Node::Normal(node) => node.best_boards(store),
         }
     }
 
     #[allow(dead_code)]
-    pub(crate) fn board(&self) -> &Board {
+    pub(crate) fn board<'store>(&self, store: &'store Store) -> &'store Board {
         match self {
             Node::ForceNotCheckmate(_) => panic!("ForceNotCheckmateNode has no board"),
-            Node::Normal(node) => &node.board,
+            Node::Normal(node) => &node.board(store),
         }
     }
 
@@ -53,10 +58,10 @@ impl Node {
         }
     }
 
-    pub(crate) fn dump_single_best_board(&self) {
+    pub(crate) fn dump_single_best_board(&self, store: &Store) {
         match self {
             Node::ForceNotCheckmate(_) => {}
-            Node::Normal(node) => node.dump_single_best_board(),
+            Node::Normal(node) => node.dump_single_best_board(store),
         }
     }
 }

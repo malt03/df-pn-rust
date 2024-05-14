@@ -13,6 +13,7 @@ pub use get_checkmate_board::CheckmateResult;
 pub(crate) use pieces::{Coord, Kind as PieceKind, Piece, Pieces, Status as PieceStatus};
 use std::{
     collections::HashMap,
+    hash::{Hash, Hasher},
     ops::{Index, IndexMut},
 };
 use PieceStatus::*;
@@ -20,10 +21,16 @@ use PieceStatus::*;
 const UP_ARROW: char = '￪';
 const DOWN_ARROW: char = '￬';
 
-#[derive(Clone, Debug, Hash)]
+#[derive(Clone, Debug)]
 pub struct Board {
     pub(crate) pieces: Pieces,
     pub(crate) board_map: Vec<Vec<Option<(PieceKind, usize)>>>,
+}
+
+impl Hash for Board {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.pieces.hash(state);
+    }
 }
 
 impl PartialEq for Board {
