@@ -2,6 +2,7 @@ mod kind;
 mod piece;
 
 use crate::shared::Set;
+use bincode::{Decode, Encode};
 pub(crate) use kind::Kind;
 pub(crate) use piece::{Coord, Piece, Status};
 use std::ops::{Index, IndexMut};
@@ -10,7 +11,7 @@ use Kind::*;
 #[cfg(test)]
 use Status::*;
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Encode, Decode)]
 pub(crate) struct Pieces {
     elements: [Set<Piece>; 8],
 }

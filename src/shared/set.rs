@@ -4,9 +4,50 @@ use std::{
     ops::{Index, IndexMut},
 };
 
+use bincode::{BorrowDecode, Decode, Encode};
+
 #[derive(Debug, Clone, Hash)]
 pub(crate) struct Set<T> {
     elements: Vec<T>,
+}
+
+impl<T> Decode for Set<T>
+where
+    T: Decode + 'static,
+{
+    fn decode<D: bincode::de::Decoder>(
+        decoder: &mut D,
+    ) -> Result<Self, bincode::error::DecodeError> {
+        Ok(Set {
+            elements: Vec::<T>::decode(decoder)?,
+        })
+    }
+}
+
+impl<'a, T> BorrowDecode<'a> for Set<T>
+where
+    T: BorrowDecode<'a>,
+{
+    fn borrow_decode<D: bincode::de::BorrowDecoder<'a>>(
+        decoder: &mut D,
+    ) -> Result<Self, bincode::error::DecodeError> {
+        Ok(Set {
+            elements: Vec::<T>::borrow_decode(decoder)?,
+        })
+    }
+}
+
+impl<T> Encode for Set<T>
+where
+    T: Encode + 'static,
+{
+    fn encode<E: bincode::enc::Encoder>(
+        &self,
+        encoder: &mut E,
+    ) -> Result<(), bincode::error::EncodeError> {
+        self.elements.encode(encoder)?;
+        Ok(())
+    }
 }
 
 impl<T> Set<T> {

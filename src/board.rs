@@ -5,7 +5,8 @@ mod get_checkmate_board;
 mod is_checked;
 mod pieces;
 
-use crate::shared::Set;
+use crate::{db::Key, shared::Set};
+use bincode::{Decode, Encode};
 use colored::Colorize;
 pub(crate) use control_map::{get_vectors, CONTROL_MAP};
 pub(crate) use create_all_next_boards::NextBoardKind;
@@ -21,7 +22,7 @@ use PieceStatus::*;
 const UP_ARROW: char = '￪';
 const DOWN_ARROW: char = '￬';
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Encode, Decode)]
 pub struct Board {
     pub(crate) pieces: Pieces,
     pub(crate) board_map: Vec<Vec<Option<(PieceKind, usize)>>>,
@@ -56,6 +57,18 @@ impl IndexMut<PieceKind> for Board {
 pub(crate) const BOARD_SIZE: usize = 9;
 
 impl Board {
+    pub(crate) fn key(&self) -> Key {
+        let mut hasher = std::collections::hash_map::DefaultHasher::new();
+        self.hash(&mut hasher);
+        let hash = hasher.finish();
+
+        let mut key = [0; 8];
+        for i in 0..8 {
+            key[i] = (hash >> (i * 8)) as u8;
+        }
+        key
+    }
+
     pub(crate) fn new(pieces: Pieces) -> Board {
         Board {
             pieces,

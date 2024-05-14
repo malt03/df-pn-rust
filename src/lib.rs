@@ -1,4 +1,5 @@
 mod board;
+mod db;
 mod error;
 mod result;
 mod shared;

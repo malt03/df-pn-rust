@@ -1,7 +1,8 @@
 use crate::BOARD_SIZE;
+use bincode::{Decode, Encode};
 use std::ops::{Add, Mul};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Encode, Decode)]
 pub(crate) struct Coord {
     pub(crate) x: i8,
     pub(crate) y: i8,

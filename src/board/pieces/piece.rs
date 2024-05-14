@@ -1,8 +1,9 @@
 mod coord;
 
+use bincode::{Decode, Encode};
 pub(crate) use coord::Coord;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Encode, Decode)]
 pub(crate) enum Status {
     MyBoard,
     EnemyBoard,
@@ -30,7 +31,7 @@ impl Status {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Encode, Decode)]
 pub(crate) struct Piece {
     pub(crate) coord: Coord,
     pub(crate) is_changed: bool,

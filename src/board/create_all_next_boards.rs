@@ -2,10 +2,11 @@ use std::collections::HashSet;
 
 use super::{get_vectors, Board, Coord, PieceKind, PieceStatus, BOARD_SIZE, CONTROL_MAP};
 use crate::{Error, Piece, Result};
+use bincode::{Decode, Encode};
 use PieceKind::*;
 use PieceStatus::*;
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Encode, Decode)]
 pub(crate) enum NextBoardKind {
     Normal,
     Uchifu,

@@ -1,9 +1,11 @@
 mod board_node;
 
 use super::{Board, ForceNotCheckmateNode, MultiSet, Node, PnDn, Position};
-use crate::{Error, NextBoardKind};
+use crate::{
+    db::{Key, DB},
+    Error, NextBoardKind,
+};
 use board_node::BoardNode;
-pub(crate) use board_node::{Key, Store};
 use core::panic;
 use std::collections::HashSet;
 use Position::*;
@@ -24,7 +26,7 @@ struct Props {
 impl Props {
     fn expand_children(
         &mut self,
-        next_nodes: Vec<(&BoardNode, NextBoardKind)>,
+        next_nodes: Vec<(BoardNode, NextBoardKind)>,
         next_position: Position,
         history: &HashSet<Key>,
         max_depth: Option<usize>,
@@ -57,8 +59,8 @@ impl Props {
 }
 
 impl NormalNode {
-    pub(crate) fn board<'store>(&self, store: &'store Store) -> &'store Board {
-        &BoardNode::get(store, self.key).board
+    pub(crate) fn board(&self, db: &DB) -> Board {
+        BoardNode::get(db, &self.key).board
     }
 
     pub(crate) fn children(&mut self) -> &mut MultiSet<Node> {
@@ -80,8 +82,8 @@ impl NormalNode {
         }
     }
 
-    pub(crate) fn new(store: &mut Store, board: Board) -> NormalNode {
-        let node = BoardNode::get_or_insert(store, board);
+    pub(crate) fn new(db: &DB, board: Board) -> NormalNode {
+        let node = BoardNode::get_or_insert(db, board);
         NormalNode::new_with_node(node.key, Offense, NextBoardKind::Normal)
     }
 
@@ -102,24 +104,19 @@ impl NormalNode {
         }
     }
 
-    pub(crate) fn calc_pndn(
-        &mut self,
-        store: &mut Store,
-        history: &HashSet<Key>,
-        max_depth: Option<usize>,
-    ) {
+    pub(crate) fn calc_pndn(&mut self, db: &DB, history: &HashSet<Key>, max_depth: Option<usize>) {
         let mut copied_history = history.clone();
         copied_history.insert(self.key);
         if self.props.is_children_expanded {
             let Some(mut best) = self.props.children.pop_front() else {
                 return;
             };
-            best.calc_pndn(store, &copied_history, max_depth);
+            best.calc_pndn(db, &copied_history, max_depth);
             self.props.children.push_back(best);
         } else {
             let next_position = self.props.position.reversed();
 
-            match BoardNode::get_child_nodes(store, next_position, self.key) {
+            match BoardNode::get_child_nodes(db, next_position, &self.key) {
                 Ok(child_nodes) => {
                     self.props.expand_children(
                         child_nodes,
@@ -130,9 +127,6 @@ impl NormalNode {
                 }
                 Err(e) => match e {
                     Error::CatchKing(board) => {
-                        for history in copied_history.iter() {
-                            println!("{}\n===========================", history);
-                        }
                         println!("{}", board);
                         panic!("unexpected catch king");
                     }
@@ -142,37 +136,35 @@ impl NormalNode {
         self.reload_pndn();
     }
 
-    pub(crate) fn dump_single_best_board(&self, store: &Store) {
+    pub(crate) fn dump_single_best_board(&self, db: &DB) {
         match self.props.position {
             Position::Offense => {
                 println!(
                     "{}\n=================================",
-                    self.board(store).reversed()
+                    self.board(db).reversed()
                 );
             }
             Position::Defense => {
-                println!("{}\n=================================", self.board(store));
+                println!("{}\n=================================", self.board(db));
             }
         }
         self.props.children.peak_front().map(|node| {
-            node.dump_single_best_board(store);
+            node.dump_single_best_board(db);
         });
     }
 
-    pub(crate) fn best_boards(mut self, store: &Store) -> Vec<Board> {
+    pub(crate) fn best_boards(mut self, db: &DB) -> Vec<Board> {
         let Some(best_nodes) = self.children().pop_same_key_fronts() else {
-            return vec![self.board(store).clone()];
+            return vec![self.board(db).clone()];
         };
-        let mut best_boards_vec: Vec<_> = best_nodes
-            .into_iter()
-            .map(|n| n.best_boards(store))
-            .collect();
+        let mut best_boards_vec: Vec<_> =
+            best_nodes.into_iter().map(|n| n.best_boards(db)).collect();
         best_boards_vec.sort_unstable_by_key(|h| h.len());
         let mut best_boards = match self.props.position {
             Offense => best_boards_vec.swap_remove(0),
             Defense => best_boards_vec.pop().unwrap(),
         };
-        best_boards.push(self.board(store).clone());
+        best_boards.push(self.board(db).clone());
         best_boards
     }
 }

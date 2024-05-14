@@ -1,8 +1,9 @@
 mod node;
 
 use super::Board;
-use node::{NormalNode, Store};
-use std::collections::HashSet;
+use crate::db;
+use node::NormalNode;
+use std::{collections::HashSet, path::Path};
 
 pub enum CheckmateResult<T> {
     Checkmate(T, usize),
@@ -37,24 +38,28 @@ impl<T> CheckmateResult<T> {
 }
 
 impl Board {
-    pub fn get_checkmate_boards(
+    pub fn get_checkmate_boards<P>(
         &self,
+        path: P,
         n: Option<usize>,
         max_depth: Option<usize>,
-    ) -> CheckmateResult<Vec<Board>> {
-        let mut store = Store::new();
+    ) -> CheckmateResult<Vec<Board>>
+    where
+        P: AsRef<Path>,
+    {
+        let db = db::open_with_cache(path).unwrap();
 
-        let mut root = NormalNode::new(&mut store, self.reversed());
+        let mut root = NormalNode::new(&db, self.reversed());
         let mut i = 0;
         loop {
             let history = HashSet::new();
-            root.calc_pndn(&mut store, &history, max_depth);
+            root.calc_pndn(&db, &history, max_depth);
             if root.pndn.pn == 0 || root.pndn.dn == 0 {
                 break;
             }
 
             if i % 50000 == 0 {
-                root.dump_single_best_board(&store);
+                root.dump_single_best_board(&db);
                 println!("{i}");
             }
 
@@ -67,11 +72,11 @@ impl Board {
         }
 
         if root.pndn.pn == 0 {
-            let mut best_boards = root.best_boards(&store);
+            let mut best_boards = root.best_boards(&db);
             best_boards.pop();
             CheckmateResult::Checkmate(best_boards, i)
         } else if root.pndn.dn == 0 {
-            let mut best_boards = root.best_boards(&store);
+            let mut best_boards = root.best_boards(&db);
             best_boards.pop();
             CheckmateResult::NotCheckmate(best_boards, i)
         } else {
@@ -80,8 +85,16 @@ impl Board {
     }
 
     #[cfg(test)]
-    fn get_checkmate_board(&self, n: usize, max_depth: Option<usize>) -> CheckmateResult<Board> {
-        match self.get_checkmate_boards(Some(n), max_depth) {
+    fn get_checkmate_board<P>(
+        &self,
+        path: P,
+        n: usize,
+        max_depth: Option<usize>,
+    ) -> CheckmateResult<Board>
+    where
+        P: AsRef<Path>,
+    {
+        match self.get_checkmate_boards(path, Some(n), max_depth) {
             CheckmateResult::Checkmate(mut boards, n) => {
                 CheckmateResult::Checkmate(boards.pop().unwrap(), n)
             }
@@ -106,7 +119,9 @@ mod tests {
         b[Fu][0] = Piece::catched(true);
         b[Hisha][0] = Piece::moved(Coord::new(7, 2), true);
         b.reload_board_map();
-        assert!(b.get_checkmate_board(200, None).is_not_checkmate(),);
+        assert!(b
+            .get_checkmate_board("/tmp/df_pn.test.rocksdb", 200, None)
+            .is_not_checkmate(),);
     }
 
     #[test]
@@ -120,7 +135,8 @@ mod tests {
         b[Hisha][0] = Piece::catched(true);
         b.reload_board_map();
         assert_eq_board(
-            &b.get_checkmate_board(10, None).unwrap(),
+            &b.get_checkmate_board("/tmp/df_pn.test.rocksdb", 10, None)
+                .unwrap(),
             "
 歩x17 香x4 桂x4 銀x4 金x3 角x2 飛
 ------------------

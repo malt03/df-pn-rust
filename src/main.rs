@@ -17,6 +17,10 @@ struct Args {
     /// If not specified, the search is performed without any limitation in depth.
     #[arg(short = 'd', long)]
     max_depth: Option<usize>,
+
+    /// The path to the database.
+    #[arg(long, default_value_t = String::from("/tmp/df_pn.rocksdb"))]
+    db_path: String,
 }
 
 fn main() {
@@ -26,7 +30,11 @@ fn main() {
     let board = Board::parsed(body);
 
     println!("{board}\n\n=================================\n");
-    let result = board.get_checkmate_boards(args.num_searches, args.max_depth.map(|d| d + 2));
+    let result = board.get_checkmate_boards(
+        args.db_path,
+        args.num_searches,
+        args.max_depth.map(|d| d + 2),
+    );
     let is_checkmate = result.is_checkmate();
     match result {
         CheckmateResult::Checkmate(boards, count)

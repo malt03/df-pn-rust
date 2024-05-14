@@ -3,10 +3,13 @@ mod multi_set;
 mod normal_node;
 mod pndn;
 
-use crate::Board;
+use crate::{
+    db::{Key, DB},
+    Board,
+};
 use force_not_checkmate_node::ForceNotCheckmateNode;
 use multi_set::*;
-pub(super) use normal_node::{Key, NormalNode, Store};
+pub(super) use normal_node::NormalNode;
 use pndn::*;
 use std::collections::HashSet;
 
@@ -16,15 +19,10 @@ pub(super) enum Node {
 }
 
 impl Node {
-    pub(super) fn calc_pndn(
-        &mut self,
-        store: &mut Store,
-        history: &HashSet<Key>,
-        max_depth: Option<usize>,
-    ) {
+    pub(super) fn calc_pndn(&mut self, db: &DB, history: &HashSet<Key>, max_depth: Option<usize>) {
         match self {
             Node::ForceNotCheckmate(_) => {}
-            Node::Normal(node) => node.calc_pndn(store, history, max_depth),
+            Node::Normal(node) => node.calc_pndn(db, history, max_depth),
         }
     }
 
@@ -35,18 +33,18 @@ impl Node {
         }
     }
 
-    pub(crate) fn best_boards(self, store: &Store) -> Vec<Board> {
+    pub(crate) fn best_boards(self, db: &DB) -> Vec<Board> {
         match self {
             Node::ForceNotCheckmate(_) => Vec::new(),
-            Node::Normal(node) => node.best_boards(store),
+            Node::Normal(node) => node.best_boards(db),
         }
     }
 
     #[allow(dead_code)]
-    pub(crate) fn board<'store>(&self, store: &'store Store) -> &'store Board {
+    pub(crate) fn board(&self, db: &DB) -> Board {
         match self {
             Node::ForceNotCheckmate(_) => panic!("ForceNotCheckmateNode has no board"),
-            Node::Normal(node) => &node.board(store),
+            Node::Normal(node) => node.board(db),
         }
     }
 
@@ -58,10 +56,10 @@ impl Node {
         }
     }
 
-    pub(crate) fn dump_single_best_board(&self, store: &Store) {
+    pub(crate) fn dump_single_best_board(&self, db: &DB) {
         match self {
             Node::ForceNotCheckmate(_) => {}
-            Node::Normal(node) => node.dump_single_best_board(store),
+            Node::Normal(node) => node.dump_single_best_board(db),
         }
     }
 }

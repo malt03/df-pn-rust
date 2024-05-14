@@ -1,34 +1,38 @@
 use super::Position;
-use crate::{Board, NextBoardKind, Result};
-use std::{
-    collections::HashMap,
-    hash::{DefaultHasher, Hash, Hasher},
+use crate::{
+    db::{get_entity, put_entity, Entity, Key, DB},
+    Board, NextBoardKind, Result,
 };
+use bincode::{Decode, Encode};
 
-pub(crate) type Key = u64;
-pub(crate) type Store = HashMap<Key, BoardNode>;
-
-#[derive(Debug)]
+#[derive(Debug, Encode, Decode)]
 pub(crate) struct BoardNode {
     pub(crate) key: Key,
     pub(crate) board: Board,
     child_keys: Option<Vec<(Key, NextBoardKind)>>,
 }
 
+impl Entity for BoardNode {
+    fn get_key(&self) -> Key {
+        self.key
+    }
+}
+
 impl BoardNode {
-    pub(crate) fn get<'store>(store: &'store Store, key: Key) -> &'store BoardNode {
-        store.get(&key).unwrap()
+    pub(crate) fn get(db: &DB, key: &Key) -> BoardNode {
+        get_entity::<BoardNode>(db, &key).unwrap()
     }
 
-    pub(crate) fn get_or_insert<'store>(
-        store: &'store mut Store,
-        board: Board,
-    ) -> &'store BoardNode {
-        let mut hasher = DefaultHasher::new();
-        board.hash(&mut hasher);
-        let key = hasher.finish();
-
-        store.entry(key).or_insert(BoardNode::new(key, board))
+    pub(crate) fn get_or_insert(db: &DB, board: Board) -> BoardNode {
+        let key = board.key();
+        match get_entity(db, &key) {
+            Some(node) => node,
+            None => {
+                let node = BoardNode::new(key, board);
+                put_entity(db, &node);
+                node
+            }
+        }
     }
 
     fn new(key: Key, board: Board) -> Self {
@@ -46,16 +50,16 @@ impl BoardNode {
         }
     }
 
-    pub(crate) fn get_child_nodes<'store>(
-        store: &'store mut Store,
+    pub(crate) fn get_child_nodes(
+        db: &DB,
         next_position: Position,
-        key: Key,
-    ) -> Result<Vec<(&'store BoardNode, NextBoardKind)>> {
-        let node = store.get(&key).unwrap();
+        key: &Key,
+    ) -> Result<Vec<(BoardNode, NextBoardKind)>> {
+        let mut node = get_entity::<BoardNode>(db, key).unwrap();
         match &node.child_keys {
             Some(child_keys) => Ok(child_keys
                 .into_iter()
-                .map(|(key, next_board_kind)| (store.get(key).unwrap(), *next_board_kind))
+                .map(|(key, next_board_kind)| (get_entity(db, key).unwrap(), *next_board_kind))
                 .collect()),
             None => {
                 let child_boards = node.board.reversed().create_all_next_boards()?;
@@ -64,20 +68,16 @@ impl BoardNode {
                     if !Self::is_valid_board(&board, next_position) {
                         continue;
                     }
-                    let mut hasher = DefaultHasher::new();
-                    board.hash(&mut hasher);
-                    let key = hasher.finish();
-                    store
-                        .entry(key)
-                        .or_insert_with(|| BoardNode::new(key, board));
-                    child_keys.push((key, next_board_kind));
+                    let node = Self::get_or_insert(db, board);
+                    child_keys.push((node.key, next_board_kind));
                 }
 
-                store.get_mut(&key).unwrap().child_keys = Some(child_keys.clone());
+                node.child_keys = Some(child_keys.clone());
+                put_entity(db, &node);
 
                 Ok(child_keys
                     .into_iter()
-                    .map(|(key, next_board_kind)| (store.get(&key).unwrap(), next_board_kind))
+                    .map(|(key, next_board_kind)| (get_entity(db, &key).unwrap(), next_board_kind))
                     .collect())
             }
         }

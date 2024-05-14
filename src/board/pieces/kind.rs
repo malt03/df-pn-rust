@@ -1,4 +1,8 @@
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+use bincode::{Decode, Encode};
+use std::collections::HashMap;
+use Kind::*;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Encode, Decode)]
 pub(crate) enum Kind {
     Fu,
     Kyousha,
@@ -9,10 +13,6 @@ pub(crate) enum Kind {
     Hisha,
     King,
 }
-
-use std::collections::HashMap;
-
-use Kind::*;
 
 const ALL_KIND: [Kind; 8] = [Fu, Kyousha, Keima, Gin, Kin, Kaku, Hisha, King];
 
