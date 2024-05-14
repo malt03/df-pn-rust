@@ -5,8 +5,11 @@ pub(crate) use rocksdb::DB;
 use rocksdb::{self, BlockBasedOptions, Cache, Options};
 pub(crate) type Key = [u8; 8];
 
-pub(crate) fn open_with_cache<P: AsRef<Path>>(path: P) -> Result<DB, rocksdb::Error> {
-    if path.as_ref().exists() {
+pub(crate) fn open_with_cache<P: AsRef<Path>>(
+    path: P,
+    reset_db: bool,
+) -> Result<DB, rocksdb::Error> {
+    if reset_db && path.as_ref().exists() {
         std::fs::remove_dir_all(&path).unwrap();
     }
 

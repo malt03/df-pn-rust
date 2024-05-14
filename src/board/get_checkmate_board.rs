@@ -40,14 +40,15 @@ impl<T> CheckmateResult<T> {
 impl Board {
     pub fn get_checkmate_boards<P>(
         &self,
-        path: P,
+        db_path: P,
+        reset_db: bool,
         n: Option<usize>,
         max_depth: Option<usize>,
     ) -> CheckmateResult<Vec<Board>>
     where
         P: AsRef<Path>,
     {
-        let db = db::open_with_cache(path).unwrap();
+        let db = db::open_with_cache(db_path, reset_db).unwrap();
 
         let mut root = NormalNode::new(&db, self.reversed());
         let mut i = 0;
@@ -87,14 +88,15 @@ impl Board {
     #[cfg(test)]
     fn get_checkmate_board<P>(
         &self,
-        path: P,
+        db_path: P,
+        reset_db: bool,
         n: usize,
         max_depth: Option<usize>,
     ) -> CheckmateResult<Board>
     where
         P: AsRef<Path>,
     {
-        match self.get_checkmate_boards(path, Some(n), max_depth) {
+        match self.get_checkmate_boards(db_path, reset_db, Some(n), max_depth) {
             CheckmateResult::Checkmate(mut boards, n) => {
                 CheckmateResult::Checkmate(boards.pop().unwrap(), n)
             }
@@ -120,7 +122,7 @@ mod tests {
         b[Hisha][0] = Piece::moved(Coord::new(7, 2), true);
         b.reload_board_map();
         assert!(b
-            .get_checkmate_board("/tmp/df_pn.test.rocksdb", 200, None)
+            .get_checkmate_board("/tmp/df_pn.test.rocksdb", true, 200, None)
             .is_not_checkmate(),);
     }
 
@@ -135,7 +137,7 @@ mod tests {
         b[Hisha][0] = Piece::catched(true);
         b.reload_board_map();
         assert_eq_board(
-            &b.get_checkmate_board("/tmp/df_pn.test.rocksdb", 10, None)
+            &b.get_checkmate_board("/tmp/df_pn.test.rocksdb", true, 10, None)
                 .unwrap(),
             "
 歩x17 香x4 桂x4 銀x4 金x3 角x2 飛

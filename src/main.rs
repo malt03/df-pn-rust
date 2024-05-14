@@ -21,6 +21,10 @@ struct Args {
     /// The path to the database.
     #[arg(long, default_value_t = String::from("/tmp/df_pn.rocksdb"))]
     db_path: String,
+
+    /// Do not reset the database.
+    #[arg(long, default_value_t = false)]
+    no_reset_db: bool,
 }
 
 fn main() {
@@ -32,6 +36,7 @@ fn main() {
     println!("{board}\n\n=================================\n");
     let result = board.get_checkmate_boards(
         args.db_path,
+        !args.no_reset_db,
         args.num_searches,
         args.max_depth.map(|d| d + 2),
     );
