@@ -63,6 +63,7 @@ impl BoardNode {
                 .collect()),
             None => {
                 let child_boards = node.board.reversed().create_all_next_boards()?;
+                let mut child_nodes = Vec::new();
                 let mut child_keys = Vec::new();
                 for (board, next_board_kind) in child_boards {
                     if !Self::is_valid_board(&board, next_position) {
@@ -70,15 +71,13 @@ impl BoardNode {
                     }
                     let node = Self::get_or_insert(db, board);
                     child_keys.push((node.key, next_board_kind));
+                    child_nodes.push((node, next_board_kind));
                 }
 
-                node.child_keys = Some(child_keys.clone());
+                node.child_keys = Some(child_keys);
                 put_entity(db, &node);
 
-                Ok(child_keys
-                    .into_iter()
-                    .map(|(key, next_board_kind)| (get_entity(db, &key).unwrap(), next_board_kind))
-                    .collect())
+                Ok(child_nodes)
             }
         }
     }
