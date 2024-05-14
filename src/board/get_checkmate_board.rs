@@ -39,48 +39,47 @@ impl<T> CheckmateResult<T> {
 impl Board {
     pub fn get_checkmate_boards(
         &self,
-        n: usize,
+        n: Option<usize>,
         max_depth: Option<usize>,
     ) -> CheckmateResult<Vec<Board>> {
         let mut root = NormalNode::new(self.reversed(), Offense, NextBoardKind::Normal);
-        let mut count = 0;
-        for i in 0..n {
-            count = i;
+        let mut i = 0;
+        loop {
             let history = HashSet::new();
             root.calc_pndn(&history, max_depth);
             if root.pndn.pn == 0 || root.pndn.dn == 0 {
                 break;
             }
 
-            if i % 1000 == 0 {
+            if i % 50000 == 0 {
+                root.dump_single_best_board();
                 println!("{i}");
+            }
+
+            i += 1;
+            if let Some(n) = n {
+                if i == n {
+                    break;
+                }
             }
         }
 
-        let is_checkmate = root.pndn.pn == 0;
-        root.dump_best_board(is_checkmate);
-
-        if !is_checkmate {
-            return if count == n - 1 {
-                CheckmateResult::Unproven
-            } else {
-                let mut best_boards = root.best_boards();
-                best_boards.pop();
-                CheckmateResult::NotCheckmate(best_boards, count)
-            };
+        if root.pndn.pn == 0 {
+            let mut best_boards = root.best_boards();
+            best_boards.pop();
+            CheckmateResult::Checkmate(best_boards, i)
+        } else if root.pndn.dn == 0 {
+            let mut best_boards = root.best_boards();
+            best_boards.pop();
+            CheckmateResult::NotCheckmate(best_boards, i)
+        } else {
+            CheckmateResult::Unproven
         }
-
-        let mut best_boards = root.best_boards();
-        best_boards.pop();
-        CheckmateResult::Checkmate(best_boards, count)
     }
 
-    pub fn get_checkmate_board(
-        &self,
-        n: usize,
-        max_depth: Option<usize>,
-    ) -> CheckmateResult<Board> {
-        match self.get_checkmate_boards(n, max_depth) {
+    #[cfg(test)]
+    fn get_checkmate_board(&self, n: usize, max_depth: Option<usize>) -> CheckmateResult<Board> {
+        match self.get_checkmate_boards(Some(n), max_depth) {
             CheckmateResult::Checkmate(mut boards, n) => {
                 CheckmateResult::Checkmate(boards.pop().unwrap(), n)
             }

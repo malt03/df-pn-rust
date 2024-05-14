@@ -133,36 +133,21 @@ impl NormalNode {
         self.reload_pndn();
     }
 
-    pub(crate) fn dump_best_board(&self, is_checkmate: bool) {
+    pub(crate) fn dump_single_best_board(&self) {
         match self.props.position {
             Position::Offense => {
                 println!(
                     "{}\n=================================",
                     self.board.reversed()
                 );
-                if is_checkmate {
-                    self.props.children.peak_front().map(|node| {
-                        node.dump_best_board(is_checkmate);
-                    });
-                } else {
-                    for node in self.props.children.iter() {
-                        node.dump_best_board(is_checkmate);
-                    }
-                }
             }
             Position::Defense => {
                 println!("{}\n=================================", self.board);
-                if is_checkmate {
-                    for node in self.props.children.iter() {
-                        node.dump_best_board(is_checkmate);
-                    }
-                } else {
-                    self.props.children.peak_front().map(|node| {
-                        node.dump_best_board(is_checkmate);
-                    });
-                }
             }
-        };
+        }
+        self.props.children.peak_front().map(|node| {
+            node.dump_single_best_board();
+        });
     }
 
     pub(crate) fn best_boards(mut self) -> Vec<Board> {

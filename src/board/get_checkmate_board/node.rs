@@ -53,10 +53,10 @@ impl Node {
         }
     }
 
-    pub(crate) fn dump_best_board(&self, is_checkmate: bool) {
+    pub(crate) fn dump_single_best_board(&self) {
         match self {
             Node::ForceNotCheckmate(_) => {}
-            Node::Normal(node) => node.dump_best_board(is_checkmate),
+            Node::Normal(node) => node.dump_single_best_board(),
         }
     }
 }

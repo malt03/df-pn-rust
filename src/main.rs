@@ -9,8 +9,9 @@ struct Args {
     board_file: String,
 
     /// Number of checkmate searches.
-    #[arg(short, long, default_value_t = 10000)]
-    num_searches: usize,
+    /// If not specified, the search is performed without any limitation in the number of searches.
+    #[arg(short, long)]
+    num_searches: Option<usize>,
 
     /// Max depth of the search.
     /// If not specified, the search is performed without any limitation in depth.
