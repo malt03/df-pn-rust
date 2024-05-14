@@ -25,11 +25,10 @@ impl Props {
     fn expand_children(
         &mut self,
         next_nodes: Vec<(&BoardNode, NextBoardKind)>,
+        next_position: Position,
         history: &HashSet<Key>,
         max_depth: Option<usize>,
     ) {
-        let next_position = self.position.reversed();
-
         if let Some(max_depth) = max_depth {
             if history.len() == max_depth {
                 self.children
@@ -46,9 +45,6 @@ impl Props {
                     .push_back(Node::ForceNotCheckmate(ForceNotCheckmateNode::new(
                         next_position,
                     )));
-                continue;
-            }
-            if !next_node.is_valid(next_position) {
                 continue;
             }
 
@@ -121,10 +117,16 @@ impl NormalNode {
             best.calc_pndn(store, &copied_history, max_depth);
             self.props.children.push_back(best);
         } else {
-            match BoardNode::get_child_nodes(store, self.key) {
+            let next_position = self.props.position.reversed();
+
+            match BoardNode::get_child_nodes(store, next_position, self.key) {
                 Ok(child_nodes) => {
-                    self.props
-                        .expand_children(child_nodes, &copied_history, max_depth);
+                    self.props.expand_children(
+                        child_nodes,
+                        next_position,
+                        &copied_history,
+                        max_depth,
+                    );
                 }
                 Err(e) => match e {
                     Error::CatchKing(board) => {
